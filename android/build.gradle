@@ -1,43 +1,64 @@
-
-
 apply plugin: 'com.android.library'
 
-def safeExtGet(prop, fallback) {
+buildscript {
+  // Simple helper that allows the root project to override versions declared by this library.
+  ext.safeExtGet = { prop, fallback ->
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+  }
 }
 
 android {
-    compileSdkVersion safeExtGet('ThermalPrinter_compileSdkVersion', 29)
-    buildToolsVersion safeExtGet('ThermalPrinter_buildToolsVersion', '29.0.2')
-    defaultConfig {
-        minSdkVersion safeExtGet('ThermalPrinter_minSdkVersion', 21)
-        targetSdkVersion safeExtGet('ThermalPrinter_targetSdkVersion', 29)
-        versionCode 1
-        versionName "1.0"
+  compileSdkVersion safeExtGet("compileSdkVersion", 33)
 
-    }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+  }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 21)
+    targetSdkVersion safeExtGet("targetSdkVersion", 33)
+    versionCode 1
+    versionName "1.0"
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
     }
-    lintOptions {
-        disable 'GradleCompatible'
-    }
+  }
+  lintOptions {
+    disable 'GradleCompatible'
+  }
 }
 
 repositories {
-    mavenLocal()
-    google()
-    jcenter()
-    maven { url 'https://www.jitpack.io' }
+  mavenLocal()
+  google()
+  jcenter()
+  maven { url 'https://www.jitpack.io' }
 }
 
 dependencies {
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.0.1'
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+  configurations.all {
+    exclude group: 'com.google.zxing'
+  }
+  //noinspection GradleDynamicVersion
+  implementation "com.facebook.react:react-native:+"  // From node_modules
+  implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.0.1'
+  implementation 'com.github.bumptech.glide:glide:4.12.0'
+  annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+  implementation 'com.github.mik3y:usb-serial-for-android:3.4.6'
+  implementation files('libs/core-3.1.0.jar')
+  implementation files("libs/telpo_api.jar")
+  implementation files("libs/SmartCardLib.jar")
+ // implementation files('libs/acssmc-1.1.1.jar')
 }

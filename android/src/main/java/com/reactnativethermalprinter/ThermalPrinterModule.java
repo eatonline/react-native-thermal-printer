@@ -1,6 +1,7 @@
 package com.reactnativethermalprinter;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 
@@ -18,17 +19,22 @@ import com.dantsu.escposprinter.exceptions.EscPosConnectionException;
 import com.dantsu.escposprinter.exceptions.EscPosEncodingException;
 import com.dantsu.escposprinter.exceptions.EscPosParserException;
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.text.TextUtils;
 
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
@@ -37,6 +43,9 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.reactnativethermalprinter.TelpoPrinter.TelpoPrinter;
+import com.reactnativethermalprinter.TelpoPrinter.TelpoPrinterCommands;
+import com.reactnativethermalprinter.TelpoPrinter.TelpoPrinterConnection;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +58,8 @@ import java.util.Set;
 public class ThermalPrinterModule extends ReactContextBaseJavaModule {
   private static final String LOG_TAG = "RN_Thermal_Printer";
   public static final String NAME = "ThermalPrinterModule";
+
+
   private Promise jsPromise;
   private ArrayList<BluetoothConnection> btDevicesList = new ArrayList();
 
@@ -108,6 +119,81 @@ public class ThermalPrinterModule extends ReactContextBaseJavaModule {
       }
     }
   }
+
+  @ReactMethod
+  public void printUsb(String payload, boolean autoCut, boolean openCashbox, double mmFeedPaper, double printerDpi, double printerWidthMM, double printerNbrCharactersPerLine, Promise promise) {
+//
+//        05-05-2021
+//        https://reactnative.dev/docs/native-modules-android
+//        The following types are currently supported but will not be supported in TurboModules. Please avoid using them:
+//
+//        Integer -> ?number
+//        int -> number
+//        Float -> ?number
+//        float -> number
+//
+    this.jsPromise = promise;
+
+    try {
+      TelpoPrinterConnection printerConnection = new TelpoPrinterConnection(getReactApplicationContext());
+      TelpoPrinterCommands printerCommands = new TelpoPrinterCommands(printerConnection);
+      EscPosPrinter printer = new TelpoPrinter(printerCommands, (int) printerDpi, (float) printerWidthMM, (int) printerNbrCharactersPerLine);
+      String processedPayload = preprocessImgTag(printer, payload);
+
+      if (openCashbox) {
+        printer.printFormattedTextAndOpenCashBox(processedPayload, (float) mmFeedPaper);
+      } else if (autoCut) {
+        printer.printFormattedTextAndCut(processedPayload, (float) mmFeedPaper);
+      } else {
+        printer.printFormattedText(processedPayload, (float) mmFeedPaper);
+      }
+
+      printer.disconnectPrinter();
+      this.jsPromise.resolve(true);
+    } catch (EscPosConnectionException e) {
+      this.jsPromise.reject("Broken connection", e.getMessage());
+    } catch (EscPosParserException e) {
+      this.jsPromise.reject("Invalid formatted text", e.getMessage());
+    } catch (EscPosEncodingException e) {
+      this.jsPromise.reject("Bad selected encoding", e.getMessage());
+    } catch (EscPosBarcodeException e) {
+      this.jsPromise.reject("Invalid barcode", e.getMessage());
+    } catch (Exception e) {
+      this.jsPromise.reject("ERROR", e.getMessage());
+    }
+
+
+  }
+
+  @ReactMethod
+  public void getUsbPrintersList(Promise promise) {
+    ArrayList<UsbDevice> devices = new ArrayList<>(); // this.getPrintersList();
+    WritableArray rnArray = Arguments.createArray();
+    for (UsbDevice device : devices) {
+      WritableNativeMap jsonObj = new WritableNativeMap();
+      jsonObj.putString("name", device.getDeviceName());
+      jsonObj.putString("productName", device.getProductName());
+      rnArray.pushMap(jsonObj);
+    }
+    promise.resolve(rnArray);
+  }
+
+  private ArrayList<UsbDevice> getPrintersList() {
+
+    UsbManager manager = (UsbManager) Objects.requireNonNull(this.getCurrentActivity()).getSystemService(Context.USB_SERVICE);
+    HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
+    Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+
+    ArrayList<UsbDevice> usbDevices = new ArrayList();
+
+    while (deviceIterator.hasNext()) {
+      UsbDevice device = deviceIterator.next();
+      usbDevices.add(device);
+    }
+
+    return usbDevices;
+  }
+
 
   @ReactMethod
   public void getBluetoothDeviceList(Promise promise) {

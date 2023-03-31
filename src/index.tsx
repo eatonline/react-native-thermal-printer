@@ -30,12 +30,30 @@ type NativeModuleType = typeof NativeModules & {
       printerNbrCharactersPerLine: number
     ): Promise<void>;
     getBluetoothDeviceList(): Promise<BluetoothPrinter[]>;
+    printUsb(
+      payload: string,
+      autoCut: boolean,
+      openCashbox: boolean,
+      mmFeedPaper: number,
+      printerDpi: number,
+      printerWidthMM: number,
+      printerNbrCharactersPerLine: number
+    ): Promise<void>;
+    printTelpo(
+      payload: string,
+      autoCut: boolean,
+      openCashbox: boolean,
+      mmFeedPaper: number,
+      printerDpi: number,
+      printerWidthMM: number,
+      printerNbrCharactersPerLine: number
+    ): Promise<void>;
+    getUsbPrintersList(): Promise<{ name: string; productName: string }[]>;
   };
 };
 
-const {
-  ThermalPrinterModule,
-}: NativeModuleType = NativeModules as NativeModuleType;
+const { ThermalPrinterModule }: NativeModuleType =
+  NativeModules as NativeModuleType;
 
 interface PrinterInterface {
   payload: string;
@@ -137,9 +155,66 @@ const getBluetoothDeviceList = (): Promise<BluetoothPrinter[]> => {
   return ThermalPrinterModule.getBluetoothDeviceList();
 };
 
+
+const printUsb = async (
+  args: Partial<PrinterInterface>
+): Promise<void> => {
+  const {
+    payload,
+    autoCut,
+    openCashbox,
+    mmFeedPaper,
+    printerDpi,
+    printerWidthMM,
+    printerNbrCharactersPerLine,
+  } = getConfig(args);
+
+  await ThermalPrinterModule.printUsb(
+    payload,
+    autoCut,
+    openCashbox,
+    mmFeedPaper,
+    printerDpi,
+    printerWidthMM,
+    printerNbrCharactersPerLine,
+  );
+};
+
+const printTelpo = async (
+  args: Partial<PrinterInterface>
+): Promise<void> => {
+  const {
+    payload,
+    autoCut,
+    openCashbox,
+    mmFeedPaper,
+    printerDpi,
+    printerWidthMM,
+    printerNbrCharactersPerLine,
+  } = getConfig(args);
+
+  await ThermalPrinterModule.printTelpo(
+    payload,
+    autoCut,
+    openCashbox,
+    mmFeedPaper,
+    printerDpi,
+    printerWidthMM,
+    printerNbrCharactersPerLine,
+  );
+};
+
+
+const getUsbPrintersList = () => {
+  return ThermalPrinterModule.getUsbPrintersList();
+};
+
 export default {
   printTcp,
   printBluetooth,
   defaultConfig,
   getBluetoothDeviceList,
+  printUsb,
+  printTelpo,
+  getUsbPrintersList,
 };
