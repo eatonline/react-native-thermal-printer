@@ -31,14 +31,14 @@ public class TelpoPrinterCommands extends EscPosPrinterCommands {
 
   private void applyTextSize(byte[] textSize) throws TelpoException {
     if (textSize == TEXT_SIZE_BIG) {
-      printer().setTextSize(32);
+      printer().setTextSize(34);
     } else if (textSize == TEXT_SIZE_NORMAL) {
-      printer().setTextSize(20);
-    } else if (textSize == TEXT_SIZE_DOUBLE_HEIGHT) {
       printer().setTextSize(24);
+    } else if (textSize == TEXT_SIZE_DOUBLE_HEIGHT) {
+      printer().setTextSize(28);
       printer().enlargeFontSize(1, 2);
     } else if (textSize == TEXT_SIZE_DOUBLE_WIDTH) {
-      printer().setTextSize(22);
+      printer().setTextSize(26);
       printer().enlargeFontSize(2, 1);
     } else {
       printer().setTextSize(22);
