@@ -1,14 +1,14 @@
 buildscript {
-    if (project == rootProject) {
-        repositories {
-            google()
-            jcenter()
-        }
-
-        dependencies {
-            classpath("com.android.tools.build:gradle:7.3.1")
-        }
+  if (project == rootProject) {
+    repositories {
+      google()
+      jcenter()
     }
+
+    dependencies {
+      classpath("com.android.tools.build:gradle:7.3.1")
+    }
+  }
 }
 
 apply plugin: 'com.android.library'
@@ -29,47 +29,48 @@ buildscript {
 }
 
 android {
-    compileSdkVersion safeExtGet('ThermalPrinter_compileSdkVersion', 33)
-    buildToolsVersion safeExtGet('ThermalPrinter_buildToolsVersion', '33.0.0')
-    defaultConfig {
-        minSdkVersion safeExtGet('ThermalPrinter_minSdkVersion', 21)
-        targetSdkVersion safeExtGet('ThermalPrinter_targetSdkVersion', 33)
-        versionCode 1
-        versionName "1.0"
-
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_11
-    targetCompatibility JavaVersion.VERSION_11
-  }
-
+  compileSdkVersion safeExtGet('ThermalPrinter_compileSdkVersion', 33)
+  buildToolsVersion safeExtGet('ThermalPrinter_buildToolsVersion', '33.0.0')
   defaultConfig {
-    minSdkVersion safeExtGet("minSdkVersion", 21)
-    targetSdkVersion safeExtGet("targetSdkVersion", 33)
+    minSdkVersion safeExtGet('ThermalPrinter_minSdkVersion', 21)
+    targetSdkVersion safeExtGet('ThermalPrinter_targetSdkVersion', 33)
     versionCode 1
     versionName "1.0"
-  }
 
-  buildTypes {
-    release {
-      minifyEnabled false
+    compileOptions {
+      sourceCompatibility JavaVersion.VERSION_11
+      targetCompatibility JavaVersion.VERSION_11
+    }
+
+    defaultConfig {
+      minSdkVersion safeExtGet("minSdkVersion", 21)
+      targetSdkVersion safeExtGet("targetSdkVersion", 33)
+      versionCode 1
+      versionName "1.0"
+    }
+
+    buildTypes {
+      release {
+        minifyEnabled false
+      }
+    }
+    lintOptions {
+      disable 'GradleCompatible'
     }
   }
-  lintOptions {
-    disable 'GradleCompatible'
+
+  repositories {
+    mavenLocal()
+    google()
+    jcenter()
+    maven { url 'https://www.jitpack.io' }
   }
-}
 
-repositories {
-  mavenLocal()
-  google()
-  jcenter()
-  maven { url 'https://www.jitpack.io' }
-}
-
-dependencies {
+  dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+  }
 }
