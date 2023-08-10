@@ -58,5 +58,8 @@ android {
     implementation files('libs/core-3.1.0.jar')
     implementation files("libs/telpo_api.jar")
     implementation files("libs/SmartCardLib.jar")
+    configurations.all {
+        exclude group: 'com.google.zxing'
+    }
   }
 }
